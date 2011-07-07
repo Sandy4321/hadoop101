@@ -21,12 +21,39 @@ public class BloomFilter<E> implements Writable {
 
     @Override
     public void write(DataOutput out) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int size_in_bytes = size/8;
+        byte[] bytes = new byte[size_in_bytes];
+                
+        for (int i=0; i < size_in_bytes; i++) {
+            byte nextByte = 0;
+            for (int j =0; j < 8; j++) {
+                if (bits.get(8*i + j)) {
+                    nextByte |= 1 << j; 
+                }
+            }
+            bytes[i] = nextByte;
+        }
+        
+        out.write(bytes);
+        
     }
+
+    
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int size_in_bytes = size/8;
+        byte[] bytes = new byte[size_in_bytes];
+        in.readFully(bytes);
+        
+        for (int i = 0; i < size_in_bytes; i++) {
+            byte nextByte = bytes[i];
+            for (int j =0; j < 8; j++) {
+                if ( ( (int)nextByte & (1<<j )) != 0) {
+                    bits.set(8* i + j);
+                }
+            }            
+        }        
     }
     
     protected int[] getIndexes(E entry) {
